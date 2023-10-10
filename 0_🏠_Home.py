@@ -1,5 +1,10 @@
 import streamlit as st
-from tools.utility import load_data, set_page, load_main_dataset, load_dep_dataset, load_comp_dataset
+from tools.utility import (
+    set_page,
+    load_main_dataset,
+    load_dep_dataset,
+    load_comp_dataset,
+)
 import time
 
 
