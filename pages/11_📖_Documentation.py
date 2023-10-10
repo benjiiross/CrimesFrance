@@ -12,7 +12,7 @@ def documentation() -> None:
         "how it was collected and how it is structured in the CSV files."
     )
 
-    path: str = "data/fichier-metadonnees-data-gouv-geographie-delinquance-062023.pdf"
+    path: str = "tools/documentation.pdf"
 
     with open(path, "rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode("utf-8")

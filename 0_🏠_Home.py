@@ -1,5 +1,5 @@
 import streamlit as st
-from tools.utility import load_data, set_page
+from tools.utility import load_data, set_page, load_main_dataset, load_dep_dataset, load_comp_dataset
 import time
 
 
@@ -10,13 +10,13 @@ def home() -> None:
     init_time: float = time.time()
     with st.spinner("Loading main dataset..."):
         name: str = "donnee-data.gouv-2022-geographie2023-produit-le2023-07-17"
-        df = load_data(f"./data/{name}.csv")
+        df = load_main_dataset()
         duration = time.time() - init_time
 
     init_time = time.time()
     with st.spinner("Loading departemental dataset..."):
         name: str = "donnee-dep-data.gouv-2022-geographie2023-produit-le2023-07-17"
-        df_dep = load_data(f"./data/{name}.csv")
+        df_dep = load_dep_dataset()
 
         # if we load the dataset for the 1st time
         if duration > 5:
@@ -32,7 +32,7 @@ def home() -> None:
         name: str = (
             "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
         )
-        df_comp = load_data(f"./data/{name}.xlsx")
+        df_comp = load_comp_dataset()
 
         if duration > 2:
             st.toast(

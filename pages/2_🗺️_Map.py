@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
-from tools.utility import load_data, set_page, DEPARTMENT_DATA
+from tools.utility import load_dep_dataset, set_page, DEPARTMENT_DATA
 
 
 @st.cache_data
@@ -10,30 +10,30 @@ def get_df_dep_plot(df: pd.DataFrame, year: int) -> pd.DataFrame:
     df_year = df[df["annee"] == year % 100]
 
     df_dep_plot = pd.DataFrame(
-        columns=["Code_departement", "faits", "lat", "lon", "pop", "faits_per_hab"]
+        columns=["Code.département", "faits", "lat", "lon", "pop", "faits_per_hab"]
     )
 
-    df_dep_plot["Code_departement"] = df_year["Code_departement"].unique()
+    df_dep_plot["Code.département"] = df_year["Code.département"].unique()
 
-    for dep in df_dep_plot["Code_departement"]:
-        df_dep_plot.loc[df_dep_plot["Code_departement"] == dep, "faits"] = df_year.loc[
-            df_year["Code_departement"] == dep
+    for dep in df_dep_plot["Code.département"]:
+        df_dep_plot.loc[df_dep_plot["Code.département"] == dep, "faits"] = df_year.loc[
+            df_year["Code.département"] == dep
         ]["faits"].sum()
 
         df_dep_plot.loc[
-            df_dep_plot["Code_departement"] == dep, "lat"
+            df_dep_plot["Code.département"] == dep, "lat"
         ] = DEPARTMENT_DATA[dep]["lat"]
         df_dep_plot.loc[
-            df_dep_plot["Code_departement"] == dep, "lon"
+            df_dep_plot["Code.département"] == dep, "lon"
         ] = DEPARTMENT_DATA[dep]["lon"]
 
-        df_dep_plot.loc[df_dep_plot["Code_departement"] == dep, "pop"] = df_year.loc[
-            df_year["Code_departement"] == dep
+        df_dep_plot.loc[df_dep_plot["Code.département"] == dep, "pop"] = df_year.loc[
+            df_year["Code.département"] == dep
         ]["POP"].iloc[0]
 
-        df_dep_plot.loc[df_dep_plot["Code_departement"] == dep, "faits_per_hab"] = (
-            df_dep_plot.loc[df_dep_plot["Code_departement"] == dep, "faits"]
-            / df_dep_plot.loc[df_dep_plot["Code_departement"] == dep, "pop"]
+        df_dep_plot.loc[df_dep_plot["Code.département"] == dep, "faits_per_hab"] = (
+            df_dep_plot.loc[df_dep_plot["Code.département"] == dep, "faits"]
+            / df_dep_plot.loc[df_dep_plot["Code.département"] == dep, "pop"]
         )
 
     return df_dep_plot
@@ -43,7 +43,7 @@ def france_map() -> None:
     set_page("Map")
 
     name = "donnee-dep-data.gouv-2022-geographie2023-produit-le2023-07-17"
-    df_dep = load_data(f"./data/{name}.csv")
+    df_dep = load_dep_dataset()
 
     year = st.slider(
         "Year",
@@ -80,7 +80,7 @@ def france_map() -> None:
             ),
             layers=[layer],
             tooltip={
-                "html": "<b>Department:</b> {Code_departement} <br/> <b>Crimes by hab:</b> {faits_per_hab}",
+                "html": "<b>Department:</b> {Code.département} <br/> <b>Crimes by hab:</b> {faits_per_hab}",
                 "style": {"color": "white"},
             },
         )
@@ -107,7 +107,7 @@ def france_map() -> None:
             ),
             layers=[layer],
             tooltip={
-                "html": "<b>Department:</b> {Code_departement} <br/> <b>Crimes:</b> {faits}",
+                "html": "<b>Department:</b> {Code.département} <br/> <b>Crimes:</b> {faits}",
                 "style": {"color": "white"},
             },
         )

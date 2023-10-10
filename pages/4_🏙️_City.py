@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from tools.utility import load_data, set_page
+from tools.utility import set_page, load_main_dataset, load_comp_dataset
 import plotly.graph_objects as go
 
 
@@ -32,10 +32,11 @@ def city() -> None:
     set_page("City")
 
     name = "donnee-data.gouv-2022-geographie2023-produit-le2023-07-17"
-    df = load_data(f"./data/{name}.csv")
+    df = load_main_dataset()
+    st.dataframe(df.head(500))
 
     name = "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
-    df_comp = load_data(f"./data/{name}.xlsx")
+    df_comp = load_comp_dataset()
 
     city = st.selectbox(
         "City", df_comp["city_dep"].unique(), placeholder="Select a city"
@@ -44,10 +45,9 @@ def city() -> None:
     # Filter data for selected city. We need to remove the department code from the city name
     code_geo = df_comp[df_comp["city_dep"] == city]["CODGEO"].values[0]
     df_city = df[df["CODGEO_2023"] == code_geo]
-    city_dep: str = city
 
     # for each classe draw a line of faits in fct of annee
-    plot_city_crimes(df_city, city_dep)
+    plot_city_crimes(df_city, str(city))
 
     st.markdown(
         "If you select a city located in the Bouches-du-Rhône department like Marseille or Cassis, you can see an abrupt increase in use of drugs in 2020."

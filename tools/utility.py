@@ -1,24 +1,55 @@
 import streamlit as st
 import pandas as pd
+import requests
+import io
 
 
 @st.cache_data
-def load_data(path: str) -> pd.DataFrame:
-    if path.endswith(".xlsx"):
-        df = pd.read_excel(path, sheet_name="zonages supracommunaux")
-
-        # add a column with the city name and department code to be able to filter
-        df["city_dep"] = df["LIBGEO"] + " (" + df["DEP"] + ")"
-        return df
-
-    df = pd.read_csv(path, sep=";", low_memory=False)
-
-    if "Code.département" in df.columns:
-        df = df.rename(columns={"Code.département": "Code_departement"})
-        df = df.rename(columns={"Code.région": "Code_region"})
-        df = df.rename(columns={"unité.de.compte": "unite_de_compte"})
-
+def load_main_dataset() -> pd.DataFrame:
+    main_dataset_path = (
+        "https://www.data.gouv.fr/fr/datasets/r/3f51212c-f7d2-4aec-b899-06be6cdd1030"
+    )
+    response = requests.get(main_dataset_path)
+    content = response.content
+    df = pd.read_csv(
+        io.BytesIO(content),
+        sep=";",
+        compression="gzip",
+        quotechar='"',
+        low_memory=False,
+    )
     return df
+
+
+@st.cache_data
+def load_dep_dataset() -> pd.DataFrame:
+    dep_dataset_path = (
+        "https://www.data.gouv.fr/fr/datasets/r/acc332f6-92be-42af-9721-f3609bea8cfc"
+    )
+    response = requests.get(dep_dataset_path)
+    content = response.content
+    df_dep = pd.read_csv(
+        io.BytesIO(content),
+        sep=";",
+        compression="gzip",
+        quotechar='"',
+        low_memory=False,
+    )
+    return df_dep
+
+
+@st.cache_data
+def load_comp_dataset() -> pd.DataFrame:
+    comp_dataset_path = (
+        "https://www.data.gouv.fr/fr/datasets/r/16ec626b-1a15-4512-a8ca-774921fc969e"
+    )
+    response = requests.get(comp_dataset_path)
+    content = response.content
+    df_comp = pd.read_excel(content, sheet_name="zonages supracommunaux")
+
+    # add a column with the city name and department code to be able to filter
+    df_comp["city_dep"] = df_comp["LIBGEO"] + " (" + df_comp["DEP"] + ")"
+    return df_comp
 
 
 def set_page(page: str) -> None:

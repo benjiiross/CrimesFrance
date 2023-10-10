@@ -1,15 +1,15 @@
 import streamlit as st
-from tools.utility import load_data, set_page
+from tools.utility import set_page, load_main_dataset, load_comp_dataset
 
 
 def category_repartition() -> None:
     set_page("Category Repartition")
 
     name = "donnee-data.gouv-2022-geographie2023-produit-le2023-07-17"
-    df = load_data(f"./data/{name}.csv")
+    df = load_main_dataset()
 
     name = "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
-    df_comp = load_data(f"./data/{name}.xlsx")
+    df_comp = load_comp_dataset()
 
     year = st.slider(
         "Year",
