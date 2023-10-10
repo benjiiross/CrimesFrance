@@ -4,7 +4,7 @@ from tools.utility import load_data, set_page
 import plotly.graph_objects as go
 
 
-def plot_city_crimes(df: pd.DataFrame, city_name) -> None:
+def plot_city_crimes(df: pd.DataFrame, city_name: str) -> None:
     fig = go.Figure()
 
     for classe in df["classe"].unique():
@@ -37,20 +37,21 @@ def city() -> None:
     name = "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
     df_comp = load_data(f"./data/{name}.xlsx")
 
-    city = st.selectbox("City", df_comp["LIBGEO"].unique(), placeholder="Select a city")
-
-    # Filter data for selected city
-    code_geo = df_comp[df_comp["LIBGEO"] == city]["CODGEO"].values[0]
-    df_city = df[df["CODGEO_2023"] == code_geo]
-
-    # for each classe draw a line of faits in fct of annee
-    plot_city_crimes(df_city, city)
-
-    st.write(
-        "If you select a city located in the Bouches-du-Rhône department like Marseille or Cassis, you can see an abrupt increase in use of drugs in 2020. This is because a new law was passed in 2020 that made it illegal to consume drugs in the street."
+    city = st.selectbox(
+        "City", df_comp["city_dep"].unique(), placeholder="Select a city"
     )
 
+    # Filter data for selected city. We need to remove the department code from the city name
+    code_geo = df_comp[df_comp["city_dep"] == city]["CODGEO"].values[0]
+    df_city = df[df["CODGEO_2023"] == code_geo]
+    city_dep: str = city
+
+    # for each classe draw a line of faits in fct of annee
+    plot_city_crimes(df_city, city_dep)
+
     st.markdown(
+        "If you select a city located in the Bouches-du-Rhône department like Marseille or Cassis, you can see an abrupt increase in use of drugs in 2020."
+        "This is because a new law was passed in 2020 that made it illegal to consume drugs in the street."
         "See more at [Le Monde](https://www.lemonde.fr/politique/article/2023/06/25/les-amendes-pour-consommation-de-drogue-pourront-etre-payables-immediatement-en-liquide-ou-carte-bancaire-a-annonce-emmanuel-macron_6179203_823448.html)"
     )
 

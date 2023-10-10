@@ -6,6 +6,9 @@ import pandas as pd
 def load_data(path: str) -> pd.DataFrame:
     if path.endswith(".xlsx"):
         df = pd.read_excel(path, sheet_name="zonages supracommunaux")
+
+        # add a column with the city name and department code to be able to filter
+        df["city_dep"] = df["LIBGEO"] + " (" + df["DEP"] + ")"
         return df
 
     df = pd.read_csv(path, sep=";", low_memory=False)
