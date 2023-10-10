@@ -27,6 +27,19 @@ def home() -> None:
                 f"Departemental dataset loaded! took {time.time() - init_time:.2f} seconds",
             )
 
+    init_time: float = time.time()
+    with st.spinner("Loading complementary datasets..."):
+        name: str = (
+            "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
+        )
+        df_comp = load_data(f"./data/{name}.xlsx")
+
+        if duration > 2:
+            st.toast(
+                f"Complementary datasets loaded! took {time.time() - init_time:.2f} seconds",
+            )
+            st.snow()
+
     st.header(
         "Municipal and departmental statistics on crime recorded by the national police and gendarmerie in France"
     )
@@ -37,9 +50,9 @@ def home() -> None:
     st.write(
         "The data is taken from the Ministry of the Interior's statistical service, the SSMI."
     )
-    # st.write(
-    #     "The data is taken from the Ministry of the Interior's statistical service, the SSMI."
-    # )
+    st.write(
+        "The data is taken from the Ministry of the Interior's statistical service, the SSMI."
+    )
 
 
 if __name__ == "__main__":

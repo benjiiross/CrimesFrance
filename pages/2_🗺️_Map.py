@@ -53,7 +53,7 @@ def france_map() -> None:
     )
 
     df_dep_plot = get_df_dep_plot(df_dep, year)
-    activated = st.toggle("Toggle crim by habitants")
+    activated = st.toggle("Toggle crim / habitants")
 
     # plot the map
     if activated:

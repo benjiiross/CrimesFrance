@@ -4,6 +4,10 @@ import pandas as pd
 
 @st.cache_data
 def load_data(path: str) -> pd.DataFrame:
+    if path.endswith(".xlsx"):
+        df = pd.read_excel(path, sheet_name="zonages supracommunaux")
+        return df
+
     df = pd.read_csv(path, sep=";", low_memory=False)
 
     if "Code.département" in df.columns:
@@ -20,6 +24,8 @@ def set_page(page: str) -> None:
         "Dataset Info": "🗂️",
         "Map": "🗺️",
         "Proportion": "📊",
+        "City": "🏙️",
+        "Category Repartition": "🚨",
         "Documentation": "📖",
         "About": "👨‍💻",
     }
