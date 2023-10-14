@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 altair==5.1.2
 numpy==1.25.2
 pandas==2.0.3
@@ -6,3 +7,5 @@ pydeck==0.8.1b0
 Requests==2.31.0
 streamlit==1.27.2
 openpyxl==3.1.2
+=======
+>>>>>>> 89a1862a2e503883a93aea6368f24363be0dac9b
