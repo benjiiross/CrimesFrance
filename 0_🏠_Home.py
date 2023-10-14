@@ -1,62 +1,37 @@
 import streamlit as st
 from tools.utility import (
     set_page,
-    load_main_dataset,
-    load_dep_dataset,
-    load_comp_dataset,
+    load_all_datasets,
 )
-import time
 
 
 def home() -> None:
     set_page("Home")
+    load_all_datasets()
 
-    # loads the dataset
-    init_time: float = time.time()
-    with st.spinner("Loading main dataset..."):
-        name: str = "donnee-data.gouv-2022-geographie2023-produit-le2023-07-17"
-        df = load_main_dataset()
-        duration = time.time() - init_time
+    """
+    # Statistical bases of the delinquency recorded by the police and the national french gendarmerie
+    :gray[by Benjamin ROSSIGNOL, 2023]
 
-    init_time = time.time()
-    with st.spinner("Loading departemental dataset..."):
-        name: str = "donnee-dep-data.gouv-2022-geographie2023-produit-le2023-07-17"
-        df_dep = load_dep_dataset()
+    The statistical bases of the delinquency recorded by the french police and gendarmerie come from the
+    *Service statistique ministériel de la sécurité intérieure*, the SSMSI (or Ministerial Statistical Service for Internal Security).
 
-        # if we load the dataset for the 1st time
-        if duration > 5:
-            st.toast(
-                f"Main dataset loaded! took {duration:.2f} seconds",
-            )
-            st.toast(
-                f"Departemental dataset loaded! took {time.time() - init_time:.2f} seconds",
-            )
+    These offences may have been recorded following a complaint lodged by a victim, a report, testimony, flagrante delicto,
+    denunciation, etc., but also on the initiative of the security forces.
 
-    init_time: float = time.time()
-    with st.spinner("Loading complementary datasets..."):
-        name: str = (
-            "info-complements-data.gouv-2022-geographie2023-produit-le2023-07-17"
-        )
-        df_comp = load_comp_dataset()
+    The dataset is composed of 4 files:
+    - **Municipal** statistical database on crime recorded by the national police and gendarmerie
+    - **Departmental** statistics on crime recorded by the national police and gendarmerie
+    - **Complementary** file to the communal statistical base of delinquency which contains **city names**, **city types** and related **department numbers**
+    - **Presentation** of municipal and departmental statistics on crime recorded by the national police and gendarmerie (**Official document**)
 
-        if duration > 2:
-            st.toast(
-                f"Complementary datasets loaded! took {time.time() - init_time:.2f} seconds",
-            )
-            st.snow()
+    This website is a data visualization of all files. It is made with Streamlit and Python using various libraries.
 
-    st.header(
-        "Municipal and departmental statistics on crime recorded by the national police and gendarmerie in France"
-    )
+    Here is the link of the dataset for reference: [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/bases-statistiques-communale-et-departementale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales/)
+    """
 
-    st.write(
-        "This dataset contains the number of crimes and offenses recorded by the national police and gendarmerie services in 2019, by municipality and department."
-    )
-    st.write(
-        "The data is taken from the Ministry of the Interior's statistical service, the SSMI."
-    )
-    st.write(
-        "The data is taken from the Ministry of the Interior's statistical service, the SSMI."
+    st.success(
+        "If you have any reclamations or questions, please contact me by [email](mailto:benjamin.rossignol.11@gmail.com) or on [GitHub](https://github.com/benjiiross). If you want to run the project you can visit the [GitHub repository](https://github.com/benjiiross/CrimesFrance)"
     )
 
 

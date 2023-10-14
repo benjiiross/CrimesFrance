@@ -2,10 +2,21 @@ import streamlit as st
 import pandas as pd
 import requests
 import io
+import time
 
 
 @st.cache_data
 def load_main_dataset() -> pd.DataFrame:
+    """
+    Loads the main dataset of crimes in France from the data.gouv.fr website.
+    To do so, it downloads the dataset from the website, and then reads it with pandas.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the loaded dataset.
+    """
+
     main_dataset_path = (
         "https://www.data.gouv.fr/fr/datasets/r/3f51212c-f7d2-4aec-b899-06be6cdd1030"
     )
@@ -15,7 +26,6 @@ def load_main_dataset() -> pd.DataFrame:
         io.BytesIO(content),
         sep=";",
         compression="gzip",
-        quotechar='"',
         low_memory=False,
     )
     return df
@@ -23,6 +33,16 @@ def load_main_dataset() -> pd.DataFrame:
 
 @st.cache_data
 def load_dep_dataset() -> pd.DataFrame:
+    """
+    Loads the dataset of crimes in France by department from the data.gouv.fr website.
+    To do so, it downloads the dataset from the website, and then reads it with pandas.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the loaded dataset.
+    """
+
     dep_dataset_path = (
         "https://www.data.gouv.fr/fr/datasets/r/acc332f6-92be-42af-9721-f3609bea8cfc"
     )
@@ -32,7 +52,6 @@ def load_dep_dataset() -> pd.DataFrame:
         io.BytesIO(content),
         sep=";",
         compression="gzip",
-        quotechar='"',
         low_memory=False,
     )
     return df_dep
@@ -40,37 +59,312 @@ def load_dep_dataset() -> pd.DataFrame:
 
 @st.cache_data
 def load_comp_dataset() -> pd.DataFrame:
+    """
+    Loads the dataset of cities and geocodes from the data.gouv.fr website.
+    To do so, it downloads the dataset from the website, and then reads it with pandas.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the loaded dataset.
+    """
+
     comp_dataset_path = (
         "https://www.data.gouv.fr/fr/datasets/r/16ec626b-1a15-4512-a8ca-774921fc969e"
     )
     response = requests.get(comp_dataset_path)
     content = response.content
-    df_comp = pd.read_excel(content, sheet_name="zonages supracommunaux")
+    df_comp = pd.read_excel(io.BytesIO(content), sheet_name="zonages supracommunaux")
 
     # add a column with the city name and department code to be able to filter
     df_comp["city_dep"] = df_comp["LIBGEO"] + " (" + df_comp["DEP"] + ")"
     return df_comp
 
 
+def load_all_datasets() -> None:
+    """
+    Loads all the datasets used in the app.
+    Times are showed in the status bar.
+    """
+
+    init_time = time.time()
+
+    try:
+        load_main_dataset()
+        load_dep_dataset()
+        load_comp_dataset()
+
+        total_time = time.time() - init_time
+
+        if total_time > 5:
+            st.toast(f"Datasets loaded! took {total_time:.2f}s", icon="🚀")
+            st.balloons()
+        else:
+            st.toast(f"Datasets reloaded! took {total_time:.2f}s", icon="🚀")
+
+    except Exception as e:
+        st.error("Error while loading the datasets. Please try again later.")
+        st.exception(e)
+
+
+@st.cache_data
+def get_crimes_per_year() -> pd.DataFrame:
+    """
+    Returns the number of crimes per year.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per year, the population per year and the number of crimes per 1000 inhabitants.
+    """
+    df = load_dep_dataset()
+
+    df_year = pd.DataFrame()
+
+    df_year["annee"] = df["annee"].unique() + 2000
+
+    df_year["faits"] = df.groupby("annee")["faits"].sum().values
+
+    # get the population per year (we take the population of the first crime type we find)
+    df_year["population"] = (
+        df[df["classe"] == "Coups et blessures volontaires"]
+        .groupby("annee")["POP"]
+        .sum()
+        .values
+    )
+
+    # since the dataset doesn't provide the population for 2021 and 2022, we use the INSEE estimation
+    # https://www.insee.fr/fr/statistiques/6686993?sommaire=6686521
+    INSEE_POPULATION = {
+        2021: 67_635_124,
+        2022: 67_842_591,
+    }
+
+    df_year.loc[df_year["annee"] == 2021, "population"] = INSEE_POPULATION[2021]
+    df_year.loc[df_year["annee"] == 2022, "population"] = INSEE_POPULATION[2022]
+
+    df_year["faits_previous_year"] = df_year["faits"].shift(1)
+    df_year["crime_relative_change"] = (
+        (df_year["faits"] - df_year["faits_previous_year"])
+        / df_year["faits_previous_year"]
+        * 100
+    ).round(2)
+
+    df_year["faits_per_1000"] = (df_year["faits"] / df_year["population"] * 1000).round(
+        2
+    )
+
+    return df_year
+
+
+@st.cache_data
+def get_crimes_per_year_by_category(year: int) -> pd.DataFrame:
+    """
+    Returns the number of crimes per year by category.
+
+    Parameters:
+    -----------
+    year: int
+        The year to get the number of crimes from.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per year by category.
+    """
+
+    df_dep = load_dep_dataset()
+
+    df_year: pd.DataFrame = df_dep[df_dep["annee"] == year % 100]
+    df_year = df_year.groupby("classe").sum()["faits"].reset_index()
+    df_year = df_year.sort_values(by="faits", ascending=False)
+
+    return df_year
+
+
+@st.cache_data
+def get_crimes_per_category_by_city(city: str) -> pd.DataFrame:
+    """
+    Returns the number of crimes per year by category for a given city.
+
+    Parameters:
+    -----------
+    city: str
+        The city to get the number of crimes from.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per year by category for a given city.
+    """
+    df = load_main_dataset()
+    df_comp = load_comp_dataset()
+
+    code_geo = df_comp[df_comp["city_dep"] == city]["CODGEO"].values[0]
+    df_city = df[df["CODGEO_2023"] == code_geo]
+
+    return df_city
+
+
+@st.cache_data
+def get_crimes_per_year_by_city(city: str) -> pd.DataFrame:
+    """
+    Returns the number of crimes per year by city.
+
+    Parameters:
+    -----------
+    city: str
+        The city to get the number of crimes from.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per year by city.
+    """
+    df_city = get_crimes_per_category_by_city(city)
+
+    df_year = pd.DataFrame()
+
+    df_year["annee"] = df_city["annee"].unique() + 2000
+
+    df_year["faits"] = df_city.groupby("annee")["faits"].sum().values
+
+    # get the population per year (we take the population of the first crime type we find)
+    df_year["population"] = (
+        df_city[df_city["classe"] == "Coups et blessures volontaires"]
+        .groupby("annee")["POP"]
+        .sum()
+        .values
+    )
+
+    # since the dataset doesn't provide the population for 2021 and 2022, we use the value from 2020
+    df_year.loc[df_year["annee"] == 2021, "population"] = df_year.loc[
+        df_year["annee"] == 2020, "population"
+    ].values[0]
+    df_year.loc[df_year["annee"] == 2022, "population"] = df_year.loc[
+        df_year["annee"] == 2020, "population"
+    ].values[0]
+
+    return df_year
+
+    return df_city
+
+
+@st.cache_data
+def get_most_dangerous_cities(
+    year: int, category: str, activated: bool
+) -> pd.DataFrame:
+    df = load_main_dataset()
+    df_comp = load_comp_dataset()
+
+    df_year = df[df["annee"] == year % 100]
+    df_category = df_year[df_year["classe"] == category]
+
+    df_category.loc[:, "faits_per_hab"] = df_category["faits"] / df_category["POP"]
+
+    # Sort based on the 'activated' flag
+    column_to_sort = "faits_per_hab" if activated else "faits"
+    df_category = df_category.sort_values(
+        by=column_to_sort, ascending=False
+    ).reset_index(drop=True)
+
+    cities = df_category.head(10)
+    cities = cities.rename(columns={"CODGEO_2023": "CODGEO"})
+
+    # Merge with the complementary dataset
+    cities = pd.merge(cities, df_comp, on="CODGEO")
+
+    cities = cities[["LIBGEO", "faits", "faits_per_hab", "POP", "DEP"]]
+    cities = cities.rename(columns={"faits_per_hab": "faits / hab"})
+
+    return cities
+
+
+@st.cache_data
+def get_df_dep_lat_lon(df: pd.DataFrame, year: int) -> pd.DataFrame:
+    df_year = df[df["annee"] == year % 100]
+
+    unique_departments = df_year["Code.département"].unique()
+    df_dep_plot = pd.DataFrame(
+        {
+            "Code.département": unique_departments,
+            "faits": [
+                df_year[df_year["Code.département"] == dep]["faits"].sum()
+                for dep in unique_departments
+            ],
+            "lat": [DEPARTMENT_DATA[dep]["lat"] for dep in unique_departments],
+            "lon": [DEPARTMENT_DATA[dep]["lon"] for dep in unique_departments],
+            "pop": [
+                df_year[df_year["Code.département"] == dep]["POP"].iloc[0]
+                for dep in unique_departments
+            ],
+        }
+    )
+
+    df_dep_plot["faits_per_hab"] = df_dep_plot["faits"] / df_dep_plot["pop"]
+
+    return df_dep_plot
+
+
+def center_metrics() -> None:
+    """
+    Centers the metrics in the page.
+
+    Returns:
+    --------
+    str
+        A string containing the CSS code to center the metrics.
+    """
+
+    css = """
+            [data-testid="metric-container"] {
+                width: fit-content;
+                margin: auto;
+            }
+
+            [data-testid="metric-container"] > div {
+                width: fit-content;
+                margin: auto;
+            }
+
+            [data-testid="metric-container"] label {
+                width: fit-content;
+                margin: auto;
+            }
+        """
+
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+
 def set_page(page: str) -> None:
+    """
+    Sets the page configuration.
+
+    Parameters:
+    -----------
+    page: str
+        The name of the page to set.
+    """
+
     page_dict = {
         "Home": "🏠",
-        "Dataset Info": "🗂️",
-        "Map": "🗺️",
+        "General Info": "🗂️",
         "Proportion": "📊",
         "City": "🏙️",
-        "Category Repartition": "🚨",
+        "Cities & Categories": "🚨",
+        "Map": "🗺️",
         "Documentation": "📖",
         "About": "👨‍💻",
     }
 
     st.set_page_config(
-        page_title=page,
+        page_title=f"{page} - Crime in France",
         page_icon=page_dict[page],
         layout="wide",
     )
 
     st.title(f"{page_dict[page]} {page}")
+    st.divider()
 
 
 DEPARTMENT_DATA = {
