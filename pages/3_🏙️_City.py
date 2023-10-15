@@ -96,28 +96,29 @@ def city() -> None:
 
             st.altair_chart(chart, use_container_width=True)
 
-    fig = go.Figure()
-    for classe in df_city["classe"].unique():
-        df_classe = df_city[df_city["classe"] == classe]
-        fig.add_trace(
-            go.Scatter(
-                x=df_classe["annee"],
-                y=df_classe["faits"],
-                name=classe,
+    if df_city["faits"].sum() != 0:
+        fig = go.Figure()
+        for classe in df_city["classe"].unique():
+            df_classe = df_city[df_city["classe"] == classe]
+            fig.add_trace(
+                go.Scatter(
+                    x=df_classe["annee"],
+                    y=df_classe["faits"],
+                    name=classe,
+                )
             )
+        fig.update_layout(
+            title=f"Total crimes in {city} by year",
+            xaxis_title="Year",
+            yaxis_title="Number of crimes",
         )
-    fig.update_layout(
-        title=f"Total crimes in {city} by year",
-        xaxis_title="Year",
-        yaxis_title="Number of crimes",
-    )
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
 
     st.warning(
         """
-        The population for 2021 and 2022 are not yet available, so their values is the same as 2020.
+        The city population for 2021 and 2022 are not yet available, so their values is the same as 2020.
         """
     )
 

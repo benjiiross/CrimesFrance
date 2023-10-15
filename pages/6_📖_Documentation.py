@@ -1,6 +1,6 @@
 import streamlit as st
 import base64
-from tools.utility import set_page
+from tools.utility import set_page, load_presentation_file
 
 
 def documentation() -> None:
@@ -13,21 +13,17 @@ def documentation() -> None:
         """
     )
 
-    path: str = "tools/documentation.pdf"
+    # path: str = "tools/documentation.pdf"
 
-    with open(path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    # with open(path, "rb") as f:
+    #     base64_pdf = base64.b64encode(f.read()).decode("utf-8")
 
-    # Embedding PDF in HTML
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>'
+    # # Embedding PDF in HTML
+    # pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>'
 
-    # Displaying File
-    st.markdown(
-        f"""
-        <h1 style="text-align: center;">{pdf_display}</h1>
-        """,
-        unsafe_allow_html=True,
-    )
+    # st.markdown(pdf_display, unsafe_allow_html=True)
+
+    load_presentation_file()
 
 
 if __name__ == "__main__":
