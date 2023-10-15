@@ -82,18 +82,16 @@ def load_comp_dataset() -> pd.DataFrame:
     return df_comp
 
 
-def load_presentation_file():
-    # path: str = "tools/documentation.pdf"
+def show_presentation_file():
+    pdf_url = "https://raw.githubusercontent.com/benjiiross/CrimesFrance/main/tools/documentation.pdf"
+    pdf_google_url = f"https://drive.google.com/viewerng/viewer?embedded=true&url={pdf_url}"
 
-    # with open(path, "rb") as f:
-    #     base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    base64_pdf = base64.b64encode(requests.get(pdf_url).content).decode("utf-8")
 
-    # # Embedding PDF in HTML
-    # pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>'
 
     pdf_display = f"""
-            <embed src="https://drive.google.com/viewerng/viewer?embedded=true&url=https://raw.githubusercontent.com/benjiiross/CrimesFrance/main/tools/documentation.pdf" width="800" height="800" type="application/pdf">
-            """
+    <embed src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>
+    """
 
     st.markdown(
         f"""
