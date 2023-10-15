@@ -10,8 +10,8 @@ def about() -> None:
     Libraries used by page
     1. General Info: [Altair](https://altair-viz.github.io)
     1. Proportion: [Plotly](https://plotly.com/python)
-    1. City: [Plotly](https://plotly.com/python)
-    1. Map: [Pydeck](https://deckgl.readthedocs.io/en/latest)
+    1. City: [Plotly](https://plotly.com/python) and [Altair](https://altair-viz.github.io)
+    5. Map: [Pydeck](https://deckgl.readthedocs.io/en/latest)
     """
 
     # links to data.gouv.fr
