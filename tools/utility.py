@@ -82,42 +82,6 @@ def load_comp_dataset() -> pd.DataFrame:
     return df_comp
 
 
-def show_presentation_file():
-    pdf_url = "https://raw.githubusercontent.com/benjiiross/CrimesFrance/main/tools/documentation.pdf"
-    pdf_google_url = f"https://drive.google.com/viewerng/viewer?embedded=true&url={pdf_url}"
-
-    base64_pdf = base64.b64encode(requests.get(pdf_url).content).decode("utf-8")
-
-
-    pdf_display = f"""
-    <embed src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>
-    """
-
-    st.markdown(
-        f"""
-        <h1 style="text-align: center;">{pdf_display}</h1>
-        """,
-        unsafe_allow_html=True,
-    )
-    # pdf_url = "https://raw.githubusercontent.com/benjiiross/CrimesFrance/main/tools/documentation.pdf"
-
-    # pdf_display = f'<iframe src="{pdf_url}" width="700" height="700" type="application/pdf"></iframe>'
-
-    # st.markdown(pdf_display, unsafe_allow_html=True)
-    # pdf_url = "https://raw.githubusercontent.com/benjiiross/CrimesFrance/main/tools/documentation.pdf"
-
-    # pdf_bytes = requests.get(pdf_url).content
-    # base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    # pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="1000" type="application/pdf"/>'
-
-    # st.markdown(
-    #     f"""
-    #     <h1 style="text-align: center;">{pdf_display}</h1>
-    #     """,
-    #     unsafe_allow_html=True,
-    # )
-
-
 def load_all_datasets() -> None:
     """
     Loads all the datasets used in the app.
@@ -332,7 +296,7 @@ def get_df_dep_lat_lon(df: pd.DataFrame, year: int) -> pd.DataFrame:
             "lat": [DEPARTMENT_DATA[dep]["lat"] for dep in unique_departments],
             "lon": [DEPARTMENT_DATA[dep]["lon"] for dep in unique_departments],
             "pop": [
-                df_year[df_year["Code.département"] == dep]["POP"].iloc[0]
+                df_year.loc[df_year["Code.département"] == dep, "POP"].values[0]
                 for dep in unique_departments
             ],
         }
