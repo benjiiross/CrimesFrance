@@ -248,13 +248,28 @@ def get_crimes_per_year_by_city(city: str) -> pd.DataFrame:
 
     return df_year
 
-    return df_city
-
 
 @st.cache_data
 def get_most_dangerous_cities(
     year: int, category: str, activated: bool
 ) -> pd.DataFrame:
+    """
+    Returns the most dangerous cities for a given year and category.
+
+    Parameters:
+    -----------
+    year: int
+        The year to get the number of crimes from.
+    category: str
+        The category of crime to get the number of crimes from.
+    activated: bool
+        Whether to sort by the number of crimes per inhabitant or not.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per year by city.
+    """
     df = load_main_dataset()
     df_comp = load_comp_dataset()
 
@@ -283,6 +298,21 @@ def get_most_dangerous_cities(
 
 @st.cache_data
 def get_df_dep_lat_lon(df: pd.DataFrame, year: int) -> pd.DataFrame:
+    """
+    Returns a DataFrame containing the number of crimes per department for a given year.
+
+    Parameters:
+    -----------
+    df: pd.DataFrame
+        The DataFrame to get the number of crimes from.
+    year: int
+        The year to get the number of crimes from.
+
+    Returns:
+    --------
+    pd.DataFrame
+        A pandas DataFrame containing the number of crimes per department for a given year.
+    """
     df_year = df[df["annee"] == year % 100]
 
     unique_departments = df_year["Code.département"].unique()
